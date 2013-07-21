@@ -1,1 +1,1 @@
-command! CtrlPDwim call ctrlp#init(ctrlp#dwim())
+command! CtrlPDwim call ctrlp#init(ctrlp#dwim#id())
