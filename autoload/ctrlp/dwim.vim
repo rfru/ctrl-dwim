@@ -23,7 +23,7 @@ let s:self_path = expand("<sfile>")
 
 function! ctrlp#dwim#init()
   let mrufs = copy(ctrlp#mrufiles#list('raw'))
-  let g4 = split(system('"$(dirname '.shellescape(s:self_path).')/../../g4opened.py"'), "\n")
+  let g4 = split(system('"$(dirname '.shellescape(s:self_path).')/../../g4opened"'), "\n")
   let current_file = expand('%:p:h')
 
 python << EOF
