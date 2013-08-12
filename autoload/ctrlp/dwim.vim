@@ -23,29 +23,29 @@ let s:self_path = expand("<sfile>")
 
 function! ctrlp#dwim#init()
   let mrufs = copy(ctrlp#mrufiles#list('raw'))
-  let g4 = split(system('"$(dirname '.shellescape(s:self_path).')/../../g4opened"'), "\n")
-  let current_file = expand('%:p:h')
+  let current_file_dir = expand('%:p:h')
 
 python << EOF
 import json
 import vim
 import re
+import subprocess
 
 mrufs = vim.eval('l:mrufs')
-current_file = vim.eval('l:current_file')
+current_file_dir = vim.eval('l:current_file_dir')
 goog = '/google/src/cloud'
 regex = "^%s/.+?/(.+?)/.+$" % goog
 
 current_proj = None
-current_proj_match = re.match(regex, current_file)
+current_proj_match = re.match(regex, current_file_dir)
 if current_proj_match:
   current_proj = current_proj_match.group(1)
-  
+
 def accept(f):
   if 'blaze-out' in f:
     return False
 
-  if current_proj: 
+  if current_proj:
     file_match = re.match(regex,f)
     if file_match:
       if file_match.group(1) == current_proj:
@@ -54,7 +54,11 @@ def accept(f):
         return False
   return True
 
-g4 = vim.eval('l:g4')
+g4 = []
+if current_proj != None:
+  proc = subprocess.Popen("g4 opened | sed 's/#.*//' | g4 -x - where | awk '/^\\// {print $3}'", shell=True, stdout=subprocess.PIPE)
+  g4 = proc.communicate()[0].split('\n')
+
 mrufs = filter(accept, mrufs)
 g4 = filter(lambda x: not(x in mrufs), g4)
 
@@ -62,7 +66,7 @@ ret = mrufs + g4
 vim.command('let ret=%s' % json.dumps(ret))
 EOF
 
-  return ret 
+  return ret
 endfunc
 
 function! ctrlp#dwim#exit()
